@@ -1,10 +1,7 @@
 # ILO Discord FAQ Bot + Dashboard
 
-> **Note:** This is a cleaned-up / updated version of the repository. The main sensitive
-> parts of the code (OpenAI API key, Discord bot token) have been **redacted** and moved
-> to environment variables, so no private credentials are committed here. The entry point
-> `app.py` reads everything from the environment; the older `chatbot.py` is kept only for
-> reference and should **not** be used as-is.
+> **Note:** This repository is part of an **ILO (International Logic Olympiad)** project and
+> is kept **private**.
 
 ## Overview
 
