@@ -1,7 +1,8 @@
 # ILO Discord FAQ Bot + Dashboard
 
-> **Note:** This repository is part of an **ILO (International Logic Olympiad)** project and
-> is kept **private**.
+> **Note:** The main application is part of an **ILO (International Logic Olympiad)** project
+> and is kept **private**. This repository contains only the portions that can be shared
+> publicly, separated out from the private app.
 
 ## Overview
 
