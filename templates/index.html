@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ILO Analytics Dashboard - Live</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            /* Color Palette */
+            --bg-body: #f3f4f6;
+            --surface: #ffffff;
+            --border: #e5e7eb;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --sidebar-bg: #0f172a;
+            --sidebar-hover: #1e293b;
+
+            /* Accents */
+            --primary: #4f46e5;
+            --primary-soft: #e0e7ff;
+            --info: #0ea5e9;
+            --info-soft: #e0f2fe;
+            --success: #10b981;
+            --success-soft: #d1fae5;
+            --warning: #f59e0b;
+            --warning-soft: #fef3c7;
+            --danger: #ef4444;
+            --danger-soft: #fee2e2;
+            --purple: #8b5cf6;
+
+            /* Utilities */
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.03), 0 4px 6px -4px rgb(0 0 0 / 0.03);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .layout {
+            min-height: 100vh;
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            min-height: 100vh;
+            background-color: var(--sidebar-bg);
+            color: #f8fafc;
+            padding: 24px 20px;
+            position: sticky;
+            top: 0;
+            border-right: 1px solid #1e293b;
+        }
+
+        .brand {
+            padding: 20px;
+            border-radius: var(--radius-md);
+            background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+            margin-bottom: 32px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .brand small {
+            display: block;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .brand h4 {
+            margin: 0 0 8px 0;
+            font-weight: 800;
+            font-size: 1.25rem;
+            letter-spacing: -0.02em;
+        }
+
+        .brand p {
+            margin: 0;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .nav-group {
+            margin-bottom: 28px;
+        }
+
+        .nav-title {
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin: 0 12px 12px;
+        }
+
+        .nav-linkx {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #cbd5e1;
+            padding: 10px 14px;
+            border-radius: var(--radius-md);
+            margin-bottom: 4px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .nav-linkx i {
+            font-size: 1.1rem;
+            color: #64748b;
+            transition: color 0.2s ease;
+        }
+
+        .nav-linkx:hover {
+            background-color: var(--sidebar-hover);
+            color: #ffffff;
+        }
+
+        .nav-linkx:hover i {
+            color: #ffffff;
+        }
+
+        .nav-linkx.active {
+            background-color: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .nav-linkx.active i {
+            color: #ffffff;
+        }
+
+        /* --- Main Content --- */
+        .main {
+            padding: 32px 40px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .topbar h1 {
+            margin: 0 0 4px 0;
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .topbar p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .chip {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            border-radius: 999px;
+            padding: 8px 16px;
+            color: var(--text-main);
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chip i {
+            color: var(--success);
+        }
+
+        .panel {
+            background: var(--surface);
+            border: 1px solid rgba(229, 231, 235, 0.5);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        /* --- Hero Section & Real-Time Cloud Animations --- */
+        .hero {
+            padding: 32px;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-left: 4px solid var(--primary);
+        }
+
+        @keyframes pulse-dot {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--success);
+            background: var(--success-soft);
+            padding: 6px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--success);
+            border-radius: 50%;
+            animation: pulse-dot 2s infinite;
+        }
+
+        .cloud-sync-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .cloud-sync-status i {
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+
+        .hero-bg-effect {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 50%;
+            background: radial-gradient(circle at 80% 50%, rgba(79, 70, 229, 0.08), transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .hero-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 24px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .hero h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        .hero p {
+            margin: 0;
+            color: var(--text-muted);
+            max-width: 600px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-soft {
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text-main);
+            padding: 10px 20px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s ease;
+        }
+
+        .btn-soft:hover {
+            background: var(--bg-body);
+            border-color: #d1d5db;
+        }
+
+        .section {
+            margin-bottom: 24px;
+            scroll-margin-top: 24px;
+        }
+
+        .section-head {
+            margin-bottom: 20px;
+        }
+
+        .section-head h3 {
+            margin: 0 0 4px 0;
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        .section-head p {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* --- KPI Cards --- */
+        .kpi-card {
+            padding: 24px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .kpi-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .kpi-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .kpi-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        /* Icon Colors */
+        .icon-primary { background: var(--primary-soft); color: var(--primary); }
+        .icon-danger { background: var(--danger-soft); color: var(--danger); }
+        .icon-success { background: var(--success-soft); color: var(--success); }
+        .icon-warning { background: var(--warning-soft); color: var(--warning); }
+        .icon-purple { background: #ede9fe; color: var(--purple); }
+        .icon-info { background: var(--info-soft); color: var(--info); }
+
+        .kpi-value {
+            font-size: 2.25rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        .kpi-sub {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .panel-pad {
+            padding: 28px;
+            height: 100%;
+        }
+
+        /* --- Charts --- */
+        .chart-wrap {
+            position: relative;
+            height: 320px;
+            width: 100%;
+        }
+
+        .chart-wrap.sm {
+            height: 280px;
+        }
+
+        /* --- Mini Stats --- */
+        .mini-stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: auto;
+        }
+
+        .mini-stat {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            background: #fafafa;
+        }
+
+        .mini-stat .num {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+            letter-spacing: -0.02em;
+        }
+
+        .mini-stat .txt {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* --- Tables --- */
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px 16px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+            background: #f8fafc;
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.95rem;
+            font-weight: 500;
+            vertical-align: middle;
+            color: var(--text-main);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .status.ok { background: var(--success-soft); color: var(--success); }
+        .status.warn { background: var(--warning-soft); color: #d97706; }
+        .status.bad { background: var(--danger-soft); color: var(--danger); }
+
+        /* --- Progress Topics --- */
+        .topic-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .topic-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .topic-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .topic-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 0.95rem;
+        }
+
+        .topic-sub {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .topic-value {
+            min-width: 60px;
+            text-align: right;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .progress-thin {
+            height: 6px;
+            border-radius: 999px;
+            background: var(--border);
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-thin span {
+            display: block;
+            height: 100%;
+            border-radius: 999px;
+            background: var(--primary);
+        }
+
+        /* --- Queue Lists --- */
+        .queue-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .queue-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            background: #fff;
+            transition: border-color 0.2s;
+        }
+
+        .queue-item:hover {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+        }
+
+        .queue-left {
+            min-width: 0;
+        }
+
+        .queue-meta {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .queue-q {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+            color: var(--text-main);
+        }
+
+        .queue-a {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .pill-count {
+            padding: 6px 12px;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .pill-unread { background: var(--danger-soft); color: var(--danger); }
+        .pill-answered { background: var(--success-soft); color: var(--success); }
+        .pill-escalated { background: var(--warning-soft); color: #d97706; }
+
+        .foot {
+            color: var(--text-muted);
+            text-align: center;
+            font-size: 0.85rem;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* --- Responsiveness --- */
+        @media (max-width: 991px) {
+            .sidebar {
+                min-height: auto;
+                position: relative;
+                padding: 16px;
+            }
+            .nav-group { margin-bottom: 16px; }
+            .main { padding: 20px; }
+            .topbar { flex-direction: column; align-items: flex-start; }
+            .hero-actions { align-items: flex-start !important; }
+        }
+
+        @media (max-width: 575px) {
+            .chart-wrap, .chart-wrap.sm { height: 260px; }
+            .mini-stat-grid { grid-template-columns: 1fr; }
+            .queue-item { flex-direction: column; }
+            .hero-top { flex-direction: column; gap: 16px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid layout">
+    <div class="row g-0">
+        <div class="col-lg-3 col-xl-2">
+            <aside class="sidebar">
+                <div class="brand">
+                    <small>Admin Portal</small>
+                    <h4>ILO Analytics</h4>
+                    <p>Operational dashboard for support queue and FAQ coverage.</p>
+                </div>
+
+                <div class="nav-group">
+                    <div class="nav-title">Overview</div>
+                    <a href="#overview" class="nav-linkx active"><i class="bi bi-grid-1x2-fill"></i> Overview</a>
+                    <a href="#performance" class="nav-linkx"><i class="bi bi-bar-chart-line-fill"></i> Performance</a>
+                    <a href="#topics" class="nav-linkx"><i class="bi bi-chat-left-text-fill"></i> Topics</a>
+                </div>
+
+                <div class="nav-group">
+                    <div class="nav-title">Operations</div>
+                    <a href="#queue" class="nav-linkx"><i class="bi bi-envelope-fill"></i> Message Queue</a>
+                    <a href="#answered" class="nav-linkx"><i class="bi bi-check2-square"></i> Resolved</a>
+                    <a href="#faq" class="nav-linkx"><i class="bi bi-question-circle-fill"></i> FAQ Coverage</a>
+                    <a href="#users" class="nav-linkx"><i class="bi bi-people-fill"></i> User Activity</a>
+                </div>
+            </aside>
+        </div>
+
+        <div class="col-lg-9 col-xl-10">
+            <main class="main">
+                <div class="topbar">
+                    <div>
+                        <h1>International Logic Olympiad</h1>
+                        <p>Real-time insights into chatbot activity, resolution rates, and support metrics.</p>
+                    </div>
+                    <div class="chip"><i class="bi bi-circle-fill" style="font-size: 0.6rem;"></i> Live Analytics</div>
+                </div>
+
+                <section id="overview" class="hero panel section" style="position: relative; overflow: hidden;">
+                    <div class="hero-bg-effect"></div>
+
+                    <div class="hero-top" style="position: relative; z-index: 1;">
+                        <div>
+                            <div class="d-flex align-items-center gap-3 mb-2">
+                                <h2 class="mb-0">Support Operations Overview</h2>
+                                <div class="live-indicator">
+                                    <div class="live-dot"></div>
+                                    Live Cloud Sync
+                                </div>
+                            </div>
+                            <p>Centralized, real-time visibility into message volume, unread requests, automated resolution, escalation load, and topic demand.</p>
+                        </div>
+                        <div class="hero-actions d-flex flex-column align-items-sm-end justify-content-center mt-3 mt-md-0">
+                            <div class="cloud-sync-status mb-2">
+                                <i class="bi bi-cloud-check-fill"></i>
+                                Connected to Node US-East-1
+                            </div>
+                            <div>
+                                <button class="btn-soft"><i class="bi bi-download me-2"></i>Export Data</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="section">
+                    <div class="row g-3">
+                        <div class="col-md-6 col-xl-2">
+                            <div class="panel kpi-card">
+                                <div class="kpi-top">
+                                    <div class="kpi-label">Total Messages</div>
+                                    <div class="kpi-icon icon-primary"><i class="bi bi-chat-dots-fill"></i></div>
+                                </div>
+                                <div class="kpi-value">1,284</div>
+                                <div class="kpi-sub">7-day volume</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 col-xl-2">
+                            <div class="panel kpi-card">
+                                <div class="kpi-top">
+                                    <div class="kpi-label">Unread</div>
+                                    <div class="kpi-icon icon-danger"><i class="bi bi-envelope-fill"></i></div>
+                                </div>
+                                <div class="kpi-value">18</div>
+                                <div class="kpi-sub">Pending review</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 col-xl-2">
+                            <div class="panel kpi-card">
+                                <div class="kpi-top">
+                                    <div class="kpi-label">Answered</div>
+                                    <div class="kpi-icon icon-success"><i class="bi bi-check2-circle"></i></div>
+                                </div>
+                                <div class="kpi-value">1,038</div>
+                                <div class="kpi-sub">Resolved by bot</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 col-xl-2">
+                            <div class="panel kpi-card">
+                                <div class="kpi-top">
+                                    <div class="kpi-label">Escalated</div>
+                                    <div class="kpi-icon icon-warning"><i class="bi bi-arrow-up-right-circle-fill"></i></div>
+                                </div>
+                                <div class="kpi-value">246</div>
+                                <div class="kpi-sub">Human follow-up</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 col-xl-2">
+                            <div class="panel kpi-card">
+                                <div class="kpi-top">
+                                    <div class="kpi-label">Resolution</div>
+                                    <div class="kpi-icon icon-purple"><i class="bi bi-diagram-3-fill"></i></div>
+                                </div>
+                                <div class="kpi-value">80.8%</div>
+                                <div class="kpi-sub">Auto-handled</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6 col-xl-2">
+                            <div class="panel kpi-card">
+                                <div class="kpi-top">
+                                    <div class="kpi-label">FAQ Topics</div>
+                                    <div class="kpi-icon icon-info"><i class="bi bi-journal-text"></i></div>
+                                </div>
+                                <div class="kpi-value">14</div>
+                                <div class="kpi-sub">Tracked categories</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="performance" class="section">
+                    <div class="row g-4">
+                        <div class="col-xl-7">
+                            <div class="panel panel-pad">
+                                <div class="section-head">
+                                    <h3>Message Volume Trend</h3>
+                                    <p>Daily inbound traffic over the last 7 days</p>
+                                </div>
+                                <div class="chart-wrap">
+                                    <canvas id="volumeChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-5">
+                            <div class="panel panel-pad">
+                                <div class="section-head">
+                                    <h3>Resolution Breakdown</h3>
+                                    <p>Automated handling vs. manual escalation</p>
+                                </div>
+                                <div class="chart-wrap sm">
+                                    <canvas id="resolutionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="section">
+                    <div class="row g-4">
+                        <div class="col-xl-5">
+                            <div class="panel panel-pad h-100 d-flex flex-column">
+                                <div class="section-head">
+                                    <h3>Operational Summary</h3>
+                                    <p>Key support indicators and metrics</p>
+                                </div>
+                                <div class="mini-stat-grid">
+                                    <div class="mini-stat">
+                                        <div class="num">214</div>
+                                        <div class="txt">Peak Daily Msgs</div>
+                                    </div>
+                                    <div class="mini-stat">
+                                        <div class="num">32</div>
+                                        <div class="txt">Exam Queries</div>
+                                    </div>
+                                    <div class="mini-stat">
+                                        <div class="num">18</div>
+                                        <div class="txt">Reg. Queries</div>
+                                    </div>
+                                    <div class="mini-stat">
+                                        <div class="num">5.2m</div>
+                                        <div class="txt">Avg Response Time</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-7">
+                            <div class="panel panel-pad">
+                                <div class="section-head">
+                                    <h3>Topic Distribution</h3>
+                                    <p>Volume of requests across frequent domains</p>
+                                </div>
+                                <div class="chart-wrap sm">
+                                    <canvas id="topicChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="topics" class="section">
+                    <div class="row g-4">
+                        <div class="col-xl-6">
+                            <div class="panel panel-pad h-100">
+                                <div class="section-head">
+                                    <h3>Top Request Categories</h3>
+                                    <p>Conversation share by category</p>
+                                </div>
+
+                                <div class="topic-list">
+                                    <div class="topic-item">
+                                        <div style="flex:1">
+                                            <div class="topic-name">Exam Access</div>
+                                            <div class="topic-sub">Schedule, start window, session rules</div>
+                                            <div class="progress-thin"><span style="width:82%; background: var(--primary);"></span></div>
+                                        </div>
+                                        <div class="topic-value">32%</div>
+                                    </div>
+
+                                    <div class="topic-item">
+                                        <div style="flex:1">
+                                            <div class="topic-name">Registration</div>
+                                            <div class="topic-sub">Portal, verification, payment</div>
+                                            <div class="progress-thin"><span style="width:61%; background: var(--info);"></span></div>
+                                        </div>
+                                        <div class="topic-value">18%</div>
+                                    </div>
+
+                                    <div class="topic-item">
+                                        <div style="flex:1">
+                                            <div class="topic-name">Technical Issues</div>
+                                            <div class="topic-sub">Submission and device issues</div>
+                                            <div class="progress-thin"><span style="width:54%; background: var(--purple);"></span></div>
+                                        </div>
+                                        <div class="topic-value">16%</div>
+                                    </div>
+
+                                    <div class="topic-item">
+                                        <div style="flex:1">
+                                            <div class="topic-name">Teams and Finalists</div>
+                                            <div class="topic-sub">Formation, notifications, eligibility</div>
+                                            <div class="progress-thin"><span style="width:43%; background: var(--success);"></span></div>
+                                        </div>
+                                        <div class="topic-value">12%</div>
+                                    </div>
+
+                                    <div class="topic-item">
+                                        <div style="flex:1">
+                                            <div class="topic-name">Scores and Certificates</div>
+                                            <div class="topic-sub">Results timing and issuance</div>
+                                            <div class="progress-thin"><span style="width:36%; background: var(--warning);"></span></div>
+                                        </div>
+                                        <div class="topic-value">11%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="faq" class="col-xl-6">
+                            <div class="panel panel-pad h-100">
+                                <div class="section-head">
+                                    <h3>FAQ Coverage Status</h3>
+                                    <p>Knowledge base health by support area</p>
+                                </div>
+
+                                <div class="table-wrap">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Category</th>
+                                                <th>Coverage</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Exam Access</td>
+                                                <td>92%</td>
+                                                <td><span class="status ok"><i class="bi bi-check-circle-fill"></i> Strong</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Registration</td>
+                                                <td>88%</td>
+                                                <td><span class="status ok"><i class="bi bi-check-circle-fill"></i> Strong</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Technical Support</td>
+                                                <td>74%</td>
+                                                <td><span class="status warn"><i class="bi bi-exclamation-triangle-fill"></i> Review</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Teams</td>
+                                                <td>79%</td>
+                                                <td><span class="status ok"><i class="bi bi-check-circle-fill"></i> Stable</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td>Final Round</td>
+                                                <td>68%</td>
+                                                <td><span class="status bad"><i class="bi bi-x-circle-fill"></i> Expand</span></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="queue" class="section">
+                    <div class="row g-4">
+                        <div class="col-xl-6">
+                            <div class="panel panel-pad h-100">
+                                <div class="section-head">
+                                    <h3>Action Needed: Unread</h3>
+                                    <p>Messages pending manual support review</p>
+                                </div>
+
+                                <div class="queue-list">
+                                    <div class="queue-item">
+                                        <div class="queue-left">
+                                            <div class="queue-meta"><i class="bi bi-clock"></i> 09:58 &nbsp;•&nbsp; <i class="bi bi-person"></i> parent_support_2</div>
+                                            <div class="queue-q">Can a missed exam be reopened because of an emergency?</div>
+                                            <div class="queue-a">No automated response matched.</div>
+                                        </div>
+                                        <div class="pill-count pill-unread">New</div>
+                                    </div>
+
+                                    <div class="queue-item">
+                                        <div class="queue-left">
+                                            <div class="queue-meta"><i class="bi bi-clock"></i> 09:54 &nbsp;•&nbsp; <i class="bi bi-person"></i> finalist_global</div>
+                                            <div class="queue-q">Is visa documentation available for all finalists?</div>
+                                            <div class="queue-a">Needs organizer confirmation.</div>
+                                        </div>
+                                        <div class="pill-count pill-unread">New</div>
+                                    </div>
+
+                                    <div class="queue-item">
+                                        <div class="queue-left">
+                                            <div class="queue-meta"><i class="bi bi-clock"></i> 09:48 &nbsp;•&nbsp; <i class="bi bi-person"></i> round_help</div>
+                                            <div class="queue-q">I submitted but did not get a confirmation page.</div>
+                                            <div class="queue-a">Pending technical review.</div>
+                                        </div>
+                                        <div class="pill-count pill-unread">3 msgs</div>
+                                    </div>
+
+                                    <div class="queue-item">
+                                        <div class="queue-left">
+                                            <div class="queue-meta"><i class="bi bi-clock"></i> 09:42 &nbsp;•&nbsp; <i class="bi bi-person"></i> school_admin</div>
+                                            <div class="queue-q">Can one school register multiple teams under one coordinator?</div>
+                                            <div class="queue-a">Not fully covered in FAQ.</div>
+                                        </div>
+                                        <div class="pill-count pill-unread">2 msgs</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="answered" class="col-xl-6">
+                            <div class="panel panel-pad h-100">
+                                <div class="section-head">
+                                    <h3>Recently Answered</h3>
+                                    <p>Latest successfully resolved inquiries</p>
+                                </div>
+
+                                <div class="queue-list">
+                                    <div class="queue-item">
+                                        <div class="queue-left">
+                                            <div class="queue-meta"><i class="bi bi-check2-all text-success"></i> 09:40 &nbsp;•&nbsp; <i class="bi bi-person"></i> student_alpha</div>
+                                            <div class="queue-q">When will scores be released?</div>
+                                            <div class="queue-a">Scores will be released within 48 hours after each exam ends.</div>
+                                        </div>
+                                        <div class="pill-count pill-answered">Auto</div>
+                                    </div>
+
+                                    <div class="queue-item">
+                                        <div class="queue-left">
+                                            <div class="queue-meta"><i class="bi bi-check2-all text-success"></i> 09:36 &nbsp;•&nbsp; <i class="bi bi-person"></i> team_builder22</div>
+                                            <div class="queue-q">How can I form a team?</div>
+                                            <div class="queue-a">Team formation guidance returned from FAQ workflow.</div>
+                                        </div>
+                                        <div class="pill-count pill-answered">Auto</div>
+                                    </div>
+
+                                    <div class="queue-item">
+                                        <div class="queue-left">
+                                            <div class="queue-meta"><i class="bi bi-check2-all text-success"></i> 09:31 &nbsp;•&nbsp; <i class="bi bi-person"></i> exam_help_now</div>
+                                            <div class="queue-q">What should I do if I have a technical issue?</div>
+                                            <div class="queue-a">Proof and handwritten-answer instructions were returned.</div>
+                                        </div>
+                                        <div class="pill-count pill-answered">Auto</div>
+                                    </div>
+
+                                    <div class="queue-item">
+                                        <div class="queue-left">
+                                            <div class="queue-meta"><i class="bi bi-check2-all text-success"></i> 09:28 &nbsp;•&nbsp; <i class="bi bi-person"></i> candidate_ilo</div>
+                                            <div class="queue-q">Who is eligible for the olympiad?</div>
+                                            <div class="queue-a">Eligibility criteria and verification requirements were returned.</div>
+                                        </div>
+                                        <div class="pill-count pill-answered">Auto</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="users" class="section">
+                    <div class="row g-4">
+                        <div class="col-xl-5">
+                            <div class="panel panel-pad h-100">
+                                <div class="section-head">
+                                    <h3>User Activity</h3>
+                                    <p>Most active accounts interacting with support</p>
+                                </div>
+                                <div class="table-wrap">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>User Handle</th>
+                                                <th>Messages</th>
+                                                <th>Resolved</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><i class="bi bi-person-circle me-2 text-muted"></i> logic_fan_21</td>
+                                                <td><strong>42</strong></td>
+                                                <td>35</td>
+                                            </tr>
+                                            <tr>
+                                                <td><i class="bi bi-person-circle me-2 text-muted"></i> junior_solver</td>
+                                                <td><strong>37</strong></td>
+                                                <td>32</td>
+                                            </tr>
+                                            <tr>
+                                                <td><i class="bi bi-person-circle me-2 text-muted"></i> teamleader_kim</td>
+                                                <td><strong>33</strong></td>
+                                                <td>27</td>
+                                            </tr>
+                                            <tr>
+                                                <td><i class="bi bi-person-circle me-2 text-muted"></i> round1_ready</td>
+                                                <td><strong>29</strong></td>
+                                                <td>23</td>
+                                            </tr>
+                                            <tr>
+                                                <td><i class="bi bi-person-circle me-2 text-muted"></i> future_finalist</td>
+                                                <td><strong>24</strong></td>
+                                                <td>19</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-7">
+                            <div class="panel panel-pad">
+                                <div class="section-head">
+                                    <h3>Escalated Cases</h3>
+                                    <p>Interactions routed to manual review</p>
+                                </div>
+
+                                <div class="queue-list">
+                                    <div class="queue-item">
+                                        <div class="queue-left">
+                                            <div class="queue-meta"><i class="bi bi-exclamation-circle text-warning"></i> 09:24 &nbsp;•&nbsp; <i class="bi bi-person"></i> parent_support</div>
+                                            <div class="queue-q">Can the exam be retaken after a missed session?</div>
+                                            <div class="queue-a">Escalated for manual review. Policy exception requested.</div>
+                                        </div>
+                                        <div class="pill-count pill-escalated">Escalated</div>
+                                    </div>
+
+                                    <div class="queue-item">
+                                        <div class="queue-left">
+                                            <div class="queue-meta"><i class="bi bi-exclamation-circle text-warning"></i> 09:15 &nbsp;•&nbsp; <i class="bi bi-person"></i> intl_candidate</div>
+                                            <div class="queue-q">Can the organizer confirm local testing center rules?</div>
+                                            <div class="queue-a">Outside current FAQ coverage. Needs regional officer.</div>
+                                        </div>
+                                        <div class="pill-count pill-escalated">Escalated</div>
+                                    </div>
+
+                                    <div class="queue-item">
+                                        <div class="queue-left">
+                                            <div class="queue-meta"><i class="bi bi-exclamation-circle text-warning"></i> 09:07 &nbsp;•&nbsp; <i class="bi bi-person"></i> coordinator_one</div>
+                                            <div class="queue-q">Can schools request custom registration billing?</div>
+                                            <div class="queue-a">Requires financial policy confirmation.</div>
+                                        </div>
+                                        <div class="pill-count pill-escalated">Escalated</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="foot">&copy; 2026 International Logic Olympiad • Dashboard Interface</div>
+            </main>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Set global chart defaults for cleaner look
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.color = '#6b7280';
+    Chart.defaults.scale.grid.color = '#f3f4f6';
+
+    const dashboardData = {
+        volumeLabels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        volumeValues: [128, 176, 149, 214, 198, 165, 154],
+        resolutionLabels: ['Automated', 'Escalated'],
+        resolutionValues: [1038, 246],
+        topicLabels: ['Exam', 'Registration', 'Technical', 'Teams', 'Scores', 'Finals'],
+        topicValues: [32, 18, 16, 12, 11, 11]
+    };
+
+    let volumeChartInstance = null;
+    let resolutionChartInstance = null;
+    let topicChartInstance = null;
+
+    function destroyExisting(chart) {
+        if (chart) chart.destroy();
+    }
+
+    function buildDashboardCharts() {
+        const volumeCanvas = document.getElementById('volumeChart');
+        const resolutionCanvas = document.getElementById('resolutionChart');
+        const topicCanvas = document.getElementById('topicChart');
+
+        if (!volumeCanvas || !resolutionCanvas || !topicCanvas) return;
+
+        destroyExisting(volumeChartInstance);
+        destroyExisting(resolutionChartInstance);
+        destroyExisting(topicChartInstance);
+
+        // Advanced Tooltip styling
+        const tooltipOptions = {
+            backgroundColor: '#111827',
+            titleFont: { size: 13, weight: '600' },
+            bodyFont: { size: 13 },
+            padding: 12,
+            cornerRadius: 8,
+            displayColors: false
+        };
+
+        // Volume Chart (Line)
+        volumeChartInstance = new Chart(volumeCanvas.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: dashboardData.volumeLabels,
+                datasets: [{
+                    label: 'Messages',
+                    data: dashboardData.volumeValues,
+                    borderColor: '#4f46e5',
+                    backgroundColor: 'rgba(79, 70, 229, 0.08)',
+                    fill: true,
+                    tension: 0.4, // Smoother curve
+                    borderWidth: 3,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#4f46e5',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: tooltipOptions
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { weight: '500' } }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        border: { display: false },
+                        ticks: { stepSize: 50, padding: 10 }
+                    }
+                }
+            }
+        });
+
+        // Resolution Chart (Doughnut)
+        resolutionChartInstance = new Chart(resolutionCanvas.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: dashboardData.resolutionLabels,
+                datasets: [{
+                    data: dashboardData.resolutionValues,
+                    backgroundColor: ['#10b981', '#f59e0b'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff',
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { padding: 20, usePointStyle: true, pointStyle: 'circle' }
+                    },
+                    tooltip: tooltipOptions
+                },
+                cutout: '75%'
+            }
+        });
+
+        // Topic Chart (Bar)
+        topicChartInstance = new Chart(topicCanvas.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: dashboardData.topicLabels,
+                datasets: [{
+                    label: 'Requests (%)',
+                    data: dashboardData.topicValues,
+                    backgroundColor: [
+                        '#4f46e5', // Primary
+                        '#0ea5e9', // Info
+                        '#8b5cf6', // Purple
+                        '#10b981', // Success
+                        '#f59e0b', // Warning
+                        '#ef4444'  // Danger
+                    ],
+                    borderRadius: 6,
+                    borderSkipped: false,
+                    barThickness: 'flex',
+                    maxBarThickness: 40
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: tooltipOptions
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { weight: '500' } }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        border: { display: false },
+                        ticks: { stepSize: 10, padding: 10 }
+                    }
+                }
+            }
+        });
+    }
+
+    function setupActiveNav() {
+        const sections = document.querySelectorAll('section[id]');
+        const navLinks = document.querySelectorAll('.nav-linkx');
+
+        function setActiveLink() {
+            let currentId = '';
+            const scrollPos = window.scrollY + 140;
+
+            sections.forEach(section => {
+                const top = section.offsetTop;
+                const height = section.offsetHeight;
+                if (scrollPos >= top && scrollPos < top + height) {
+                    currentId = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                const href = link.getAttribute('href');
+                if (href === '#' + currentId) {
+                    link.classList.add('active');
+                }
+            });
+
+            if (!currentId && navLinks.length) {
+                navLinks[0].classList.add('active');
+            }
+        }
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                navLinks.forEach(item => item.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        window.addEventListener('scroll', setActiveLink);
+        setActiveLink();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        buildDashboardCharts();
+        setupActiveNav();
+    });
+
+    window.addEventListener('resize', function () {
+        clearTimeout(window.__dashboardResizeTimer);
+        window.__dashboardResizeTimer = setTimeout(buildDashboardCharts, 180);
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
